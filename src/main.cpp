@@ -1,12 +1,12 @@
 // Libraries used in this project
+#include <ArduinoJson.h>
+#include <ESPmDNS.h>
 #include <UniversalTelegramBot.h>
+#include <Update.h>
+#include <WebServer.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WiFiClientSecure.h>
-#include <WebServer.h>
-#include <ESPmDNS.h>
-#include <Update.h>
-#include <ArduinoJson.h>
 
 // Define wifi credentials, Bot token and a local host name
 #include <credentials.h>
@@ -32,21 +32,17 @@ String style;
 String loginIndex;
 String serverIndex;
 
-
 // Callback function called when a new message arrived
-void handleNewMessages(int numNewMessages)
-{
+void handleNewMessages(int numNewMessages) {
     Serial.print("\n\n New Telegram message received: ");
 
     // Handle any number of messages in the queue
-    for (int i = 0; i < numNewMessages; i++)
-    {
+    for (int i = 0; i < numNewMessages; i++) {
         String chat_id = bot.messages[i].chat_id;
         String text = bot.messages[i].text;
         String from_name = bot.messages[i].from_name;
 
-        if (from_name == "")
-        {
+        if (from_name == "") {
             from_name = "Guest";
         }
 
@@ -54,35 +50,25 @@ void handleNewMessages(int numNewMessages)
         text.toLowerCase();
 
         // Inline buttons with callbacks when pressed will raise a callback_query message
-        if (bot.messages[i].type == "callback_query")
-        {
-            if (text == "q1_1")
-            {
+        if (bot.messages[i].type == "callback_query") {
+            if (text == "q1_1") {
                 q1 = 1;
             }
-            if (text == "q1_2")
-            {
+            if (text == "q1_2") {
                 q1 = 2;
             }
-            if (text == "q1_3")
-            {
+            if (text == "q1_3") {
                 q1 = 3;
             }
-            if (text == "q1_4")
-            {
+            if (text == "q1_4") {
                 q1 = 4;
             }
-            if (text == "q1_5")
-            {
+            if (text == "q1_5") {
                 q1 = 5;
             }
-        // Handle commands
-        }
-        else
-        {
-            if (strstr("/start help hello", text.c_str()))
-            {
-
+            // Handle commands
+        } else {
+            if (strstr("/start help hello", text.c_str())) {
                 String welcome =
                     "Salut.\n"
                     "Bine ai venit la cabinetul meu virtual de consiliere.\n\n"
@@ -90,20 +76,18 @@ void handleNewMessages(int numNewMessages)
                     "/pda_screening  : Completeaza chestionarul PDA. \n"
                     "/rezultate      : Genereaza rezultatele dupa completare.";
                 bot.sendMessage(chat_id, welcome, "");
- 
             }
 
-            if (text == "/pda_screening")
-            {
+            if (text == "/pda_screening") {
                 bot.sendChatAction(chat_id, "typing");
                 delay(500);
 
                 String welcome =
                     "Mai jos vă prezentăm o listă de cuvinte care descriu emoţiile pe care oamenii le au în diverse situaţii. \n"
                     "Citiţi cu atenţie fiecare cuvânt, apoi marcaţi varianta care corespunde cel mai bine întrebării:";
-                
+
                 bot.sendMessage(chat_id, welcome, "");
-                
+
                 bot.sendChatAction(chat_id, "typing");
                 delay(500);
 
@@ -113,7 +97,7 @@ void handleNewMessages(int numNewMessages)
                 delay(500);
 
                 welcome = "Obosit";
-                
+
                 String keyboardJson =
                     "["
                     "[{ \"text\" : \"Deloc\", \"callback_data\" : \"q1_1\" }],"
@@ -122,50 +106,40 @@ void handleNewMessages(int numNewMessages)
                     "[{ \"text\" : \"Mult\", \"callback_data\" : \"q1_4\" }],"
                     "[{ \"text\" : \"Foarte mult\", \"callback_data\" : \"q1_5\" }]"
                     "]";
-                
+
                 //String keyboardJson = "[[{ \"text\" : \"Go to Google\", \"url\" : \"https://www.google.com\" }],[{ \"text\" : \"Send\", \"callback_data\" : \"This was sent by inline\" }]]";
                 bot.sendMessageWithInlineKeyboard(chat_id, welcome, "", keyboardJson);
                 Serial.println("inline message sent");
             }
 
-            if (text == "/rezultate")
-            {
-              bot.sendChatAction(chat_id, "typing");
-              delay(100);
-              String welcome = "Scorul obtinut de dumneavoastra este: ";
-              welcome += String(q1);
-              bot.sendMessage(chat_id, welcome, "");
+            if (text == "/rezultate") {
+                bot.sendChatAction(chat_id, "typing");
+                delay(100);
+                String welcome = "Scorul obtinut de dumneavoastra este: ";
+                welcome += String(q1);
+                bot.sendMessage(chat_id, welcome, "");
             }
 
-
-
-
-
-
-            if (strstr("site cv", text.c_str()))
-            {
+            if (strstr("site cv", text.c_str())) {
                 String keyboardJson =
                     "[[{ \"text\" : \"Go to a website\", \"url\" : \"https://timandi.xyz\" }],"
                     "[{ \"text\" : \"Tell him I said Hi\", \"callback_data\" : \"Si el :))\" }]]";
                 bot.sendMessageWithInlineKeyboard(chat_id, "Choose from one of the following options", "", keyboardJson);
             }
 
-            if (text == "/joke")
-            {
+            if (text == "/joke") {
                 bot.sendChatAction(chat_id, "typing");
                 delay(1000);
                 bot.sendMessage(chat_id, ":|", "");
             }
-        
-      }
+        }
     }
 }
 /**====================================
  *    WIFI & OTA setup function
  *===================================**/
-void setupWifi()
-{
-    // CSS style 
+void setupWifi() {
+    // CSS style
     style =
         "<style>#file-input,input{width:100%;height:44px;border-radius:4px;margin:10px auto;font-size:15px}"
         "input{background:#f1f1f1;border:0;padding:0 15px}body{background:#3498db;font-family:sans-serif;font-size:14px;color:#777}"
@@ -237,13 +211,15 @@ void setupWifi()
         "</script>" +
         style;
 
+    // Additional SSL certificate
+    client.setCACert(TELEGRAM_CERTIFICATE_ROOT);
+
     // Connect to WiFi network
     WiFi.begin(ssid, password);
     Serial.println("");
 
     // Wait for connection
-    while (WiFi.status() != WL_CONNECTED)
-    {
+    while (WiFi.status() != WL_CONNECTED) {
         delay(500);
         Serial.print(".");
     }
@@ -254,11 +230,9 @@ void setupWifi()
     Serial.println(WiFi.localIP());
 
     // Use MDSN for a friendly hostname - http://psihobot.local
-    if (!MDNS.begin(host))
-    {
+    if (!MDNS.begin(host)) {
         Serial.println("Error setting up MDNS responder!");
-        while (1)
-        {
+        while (1) {
             delay(1000);
         }
     }
@@ -277,7 +251,8 @@ void setupWifi()
     });
 
     // Handle upload of new firmware
-    server.on("/update", HTTP_POST, []() {
+    server.on(
+        "/update", HTTP_POST, []() {
         server.sendHeader("Connection", "close");
         server.send(200, "text/plain", (Update.hasError()) ? "FAIL" : "OK");
         ESP.restart(); }, []() {
@@ -308,9 +283,7 @@ void setupWifi()
                 {
                     Update.printError(Serial);
                 }
-            } 
-        }
-    );
+            } });
     server.begin();
     Serial.println("All good ;)");
 }
@@ -318,8 +291,7 @@ void setupWifi()
 /**====================================
  *    SETUP function
  *===================================**/
-void setup(void)
-{
+void setup(void) {
     Serial.begin(115200);
 
     setupWifi();
@@ -328,18 +300,15 @@ void setup(void)
 /**====================================
  *    LOOP function
  *===================================**/
-void loop(void)
-{
+void loop(void) {
     server.handleClient();
     delay(1);
 
-    if (millis() > lastTimeBotRan + botRequestDelay)
-    {
+    if (millis() > lastTimeBotRan + botRequestDelay) {
         // Check for new messages
         int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
 
-        while (numNewMessages)
-        {
+        while (numNewMessages) {
             Serial.println("got response");
             handleNewMessages(numNewMessages);
             numNewMessages = bot.getUpdates(bot.last_message_received + 1);
